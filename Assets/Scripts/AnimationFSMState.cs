@@ -69,5 +69,23 @@ namespace Yours.AnimationFSM
 
             return component;
         }
+
+        protected static TProp GetStateProp<TProp>(Animator obj) where TProp : IStateProperty
+        {
+            var holder = GetBehaviour<IStatePropertyHolder>(obj, true);
+
+            foreach (var field in holder.GetType().GetFields())
+            {
+                if (!Attribute.IsDefined(field, typeof(StatePropertyAttribute)))
+                    continue;
+
+                if (field is not IStateProperty)
+                    throw new Exception($"[err] field {field.Name} with {nameof(StatePropertyAttribute)} is not a {nameof(IStateProperty)}, which is not allowd.");
+
+                return (TProp)field.GetValue(holder);
+            }
+
+            throw new Exception($"[err] cannot found any field with {nameof(StatePropertyAttribute)} in {holder.name}.");
+        }
     }
 }
